@@ -14,13 +14,19 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.List;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements Camera.PreviewCallback,OnFrameAvailableListener{
+    private static final String TAG = "MainActivity";
 
     @BindView(R.id.gl_surface_view)
     GLSurfaceView mGlSurfaceView;
@@ -31,6 +37,11 @@ public class MainActivity extends AppCompatActivity implements Camera.PreviewCal
     Context mContext;
     private MainHandler mMainHandler;
 
+    int currentCameraType = Camera.CameraInfo.CAMERA_FACING_FRONT;
+    int cameraWidth = 1280;
+    int cameraHeight = 720;
+    Camera mCamera;
+    boolean isNeedSwitchCameraSurfaceTexture = true;
 
     static class MainHandler extends Handler {
 
@@ -48,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PreviewCal
             MainActivity activity = mActivityWeakReference.get();
             switch (msg.what) {
                 case HANDLE_CAMERA_START_PREVIEW:
+                    activity.handleCameraStartPreview((SurfaceTexture) msg.obj);
                     break;
             }
         }
@@ -60,8 +72,15 @@ public class MainActivity extends AppCompatActivity implements Camera.PreviewCal
         mContext = this;
         mMainHandler = new MainHandler(this);
         mGlSurfaceView.setEGLContextClientVersion(2);
+        mGlSurfaceView.setRenderer(new GLRenderer());
+        mGlSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+    }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        openCamera(currentCameraType, cameraWidth, cameraHeight);
+        mGlSurfaceView.onResume();
     }
 
     @OnClick({R.id.btn_start, R.id.btn_stop})
@@ -76,16 +95,92 @@ public class MainActivity extends AppCompatActivity implements Camera.PreviewCal
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-
+        Log.e(TAG, "onFrameAvailable: " );
     }
-
+    private void handleCameraStartPreview(SurfaceTexture surfaceTexture) {
+        mCamera.setPreviewCallbackWithBuffer(this);
+        try {
+            mCamera.setPreviewTexture(surfaceTexture);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        surfaceTexture.setOnFrameAvailableListener(this);
+        mCamera.startPreview();
+    }
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
-
+        Log.e(TAG, "onPointerCaptureChanged: " );
     }
 
     @Override
-    public void onPreviewFrame(byte[] bytes, Camera camera) {
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        Log.e(TAG, "onPreviewFrame: ");
+        mCamera.addCallbackBuffer(data);
+    }
 
+    class GLRenderer implements GLSurfaceView.Renderer{
+        SurfaceTexture mCameraSurfaceTexture;
+        private int mCameraTextureId = 1;
+
+        @Override
+        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+            Log.e(TAG, "onSurfaceCreated: " );
+            switchCameraSurfaceTexture();
+        }
+        public void switchCameraSurfaceTexture() {
+            Log.e(TAG, "switchCameraSurfaceTexture");
+            isNeedSwitchCameraSurfaceTexture = false;
+            if (mCameraSurfaceTexture != null) {
+                destroySurfaceTexture();
+            }
+            mCameraSurfaceTexture = new SurfaceTexture(mCameraTextureId);
+            Log.e(TAG, "send start camera message");
+            mMainHandler.sendMessage(mMainHandler.obtainMessage(
+                    MainHandler.HANDLE_CAMERA_START_PREVIEW,
+                    mCameraSurfaceTexture));
+        }
+        public void destroySurfaceTexture() {
+            if (mCameraSurfaceTexture != null) {
+                mCameraSurfaceTexture.release();
+                mCameraSurfaceTexture = null;
+            }
+        }
+        @Override
+        public void onSurfaceChanged(GL10 gl, int width, int height) {
+            Log.e(TAG, "onSurfaceChanged: ");
+        }
+
+        @Override
+        public void onDrawFrame(GL10 gl) {
+            Log.e(TAG, "onDrawFrame: ");
+        }
+    }
+
+    private void openCamera(int cameraType, int desiredWidth, int desiredHeight) {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        int cameraId = 0;
+        int numCameras = Camera.getNumberOfCameras();
+        for (int i = 0; i < numCameras; i++) {
+            Camera.getCameraInfo(i, info);
+            if (info.facing == cameraType) {
+                cameraId = i;
+                mCamera = Camera.open(i);
+                currentCameraType = cameraType;
+                break;
+            }
+        }
+        CameraUtils.setCameraDisplayOrientation(this, cameraId, mCamera);
+        Camera.Parameters parameters = mCamera.getParameters();
+
+
+        List<String> focusModes = parameters.getSupportedFocusModes();
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+
+        int[] closetFramerate = CameraUtils.closetFramerate(parameters, 30);
+        parameters.setPreviewFpsRange(closetFramerate[0], closetFramerate[1]);
+
+        CameraUtils.choosePreviewSize(parameters, desiredWidth, desiredHeight);
+        mCamera.setParameters(parameters);
     }
 }
