@@ -2,18 +2,21 @@ package com.aserbao.cameravideorecord.cameraDemo01;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.aserbao.cameravideorecord.R;
 
+import java.io.File;
 import java.io.IOException;
 
 import butterknife.BindView;
@@ -28,9 +31,17 @@ public class CameraTakePictureActivity extends AppCompatActivity implements Surf
     SurfaceView mPictureSv;
     @BindView(R.id.image_view)
     ImageView mImageView;
+    @BindView(R.id.take_picture)
+    Button mTakePicture;
+    @BindView(R.id.btn_recording)
+    Button mBtnRecording;
+    @BindView(R.id.btn_start_preview)
+    Button mBtnStartPreview;
     private Camera mCamera;
     private SurfaceHolder mHolder;
     private Bitmap mBitmap;
+    private MediaRecorder mMediaRecorder;
+    private boolean isRecording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +49,9 @@ public class CameraTakePictureActivity extends AppCompatActivity implements Surf
         setContentView(R.layout.activity_camera_take_picture);
         ButterKnife.bind(this);
         mHolder = mPictureSv.getHolder();
-        mHolder.setFormat(PixelFormat.TRANSPARENT);
-        mHolder.addCallback(this);
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+//        mHolder.setFormat(PixelFormat.TRANSPARENT);
+//        mHolder.addCallback(this);
+//        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     @Override
@@ -120,8 +131,49 @@ public class CameraTakePictureActivity extends AppCompatActivity implements Surf
                 });
                 break;
             case R.id.btn_recording:
-
+                if(!isRecording){
+                    mBtnRecording.setText("停止录制");
+                    startRecording();
+                }else{
+                    mBtnRecording.setText("开始录制");
+                    stopRecording();
+                }
                 break;
+        }
+    }
+
+    private void startRecording() {
+        try {
+            mCamera.unlock();
+            mMediaRecorder = new MediaRecorder();
+           /* String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/ych/123.mp4";
+            new File(filePath);*/
+            File file = new File(Environment.getExternalStorageDirectory().getCanonicalFile() + "/1234.mp4");
+            mMediaRecorder.reset();
+            mMediaRecorder.setCamera(mCamera);
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+            mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+            mMediaRecorder.setVideoSize(320, 240);//每个手机的屏幕视频都不一样，需要调整
+//            mMediaRecorder.setVideoFrameRate(4);
+            mMediaRecorder.setOutputFile(file.getAbsolutePath());
+            mMediaRecorder.setPreviewDisplay(mHolder.getSurface());  // ①
+            mMediaRecorder.prepare();
+            mMediaRecorder.start();
+            isRecording = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopRecording() {
+        if (mMediaRecorder != null) {
+            isRecording = false;
+            mMediaRecorder.stop();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
         }
     }
 

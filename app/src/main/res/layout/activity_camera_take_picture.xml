@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"/>
     <Button
         android:id="@+id/btn_recording"
-        android:text="recording"
+        android:text="开始录像"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
