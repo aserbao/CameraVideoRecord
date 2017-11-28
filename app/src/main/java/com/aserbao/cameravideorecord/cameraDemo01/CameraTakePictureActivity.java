@@ -13,6 +13,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.aserbao.cameravideorecord.R;
 
@@ -151,21 +152,27 @@ public class CameraTakePictureActivity extends AppCompatActivity implements Surf
             File file = new File(Environment.getExternalStorageDirectory().getCanonicalFile() + "/1234.mp4");
             mMediaRecorder.reset();
             mMediaRecorder.setCamera(mCamera);
-            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
             mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
-            mMediaRecorder.setVideoSize(320, 240);//每个手机的屏幕视频都不一样，需要调整
+//            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
+//            mMediaRecorder.setVideoSize(320, 240);//每个手机的屏幕视频都不一样，需要调整
 //            mMediaRecorder.setVideoFrameRate(4);
-            mMediaRecorder.setOutputFile(file.getAbsolutePath());
+            mMediaRecorder.setVideoEncoder(MediaRecorder
+                    .VideoEncoder.H264);
+            mMediaRecorder.setVideoSize(1280, 720);
+            // 每秒 4帧
+            mMediaRecorder.setVideoFrameRate(20);
             mMediaRecorder.setPreviewDisplay(mHolder.getSurface());  // ①
+            mMediaRecorder.setOutputFile(file.getAbsolutePath());
             mMediaRecorder.prepare();
             mMediaRecorder.start();
             isRecording = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Toast.makeText(this, "成功", Toast.LENGTH_SHORT).show();
     }
 
     private void stopRecording() {
