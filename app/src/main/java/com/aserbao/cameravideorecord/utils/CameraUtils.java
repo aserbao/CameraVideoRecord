@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.aserbao.cameravideorecord;
+package com.aserbao.cameravideorecord.utils;
 
 import android.app.Activity;
 import android.hardware.Camera;

@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.aserbao.cameravideorecord.R;
+import com.aserbao.cameravideorecord.utils.MediaUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -96,16 +97,10 @@ public class RecordingActivity extends AppCompatActivity {
 
     private void mStartRecording() {
         try {
-            mRecorder = new MediaRecorder();
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
             String s = Environment.getExternalStorageDirectory().getCanonicalFile().getAbsolutePath() + "/aserbao";
             boolean b = new File(s).mkdir();
             mAbsolutePath = new File(s + "/" + String.valueOf(System.currentTimeMillis()) + ".3gp").getAbsolutePath();
-            mRecorder.setOutputFile(mAbsolutePath);
-            mRecorder.prepare();
-            mRecorder.start();
+            mRecorder = MediaUtils.startRecording(mAbsolutePath);
             updateAudioSize();
             mTextView.setText("录音保存的路径名为：" + mAbsolutePath.toString());
         } catch (IOException e) {
@@ -131,25 +126,25 @@ public class RecordingActivity extends AppCompatActivity {
                 Log.e("audio_size", "updateAudioSize: " + String.valueOf(db/4) + "==================getMaxAmplitude: " + String.valueOf(mRecorder.getMaxAmplitude()));
                 switch (db / 4) {
                     case 0:
-                       mImageView.setImageResource(R.drawable.message_vioce01);
+                        mImageView.setImageResource(R.drawable.message_vioce01);
                         break;
                     case 1:
                         mImageView.setImageResource(R.drawable.message_vioce01);
                         break;
                     case 2:
-                       mImageView.setImageResource(R.drawable.message_vioce02);
+                        mImageView.setImageResource(R.drawable.message_vioce02);
                         break;
                     case 3:
-                       mImageView.setImageResource(R.drawable.message_vioce03);
+                        mImageView.setImageResource(R.drawable.message_vioce03);
                         break;
                     case 4:
-                       mImageView.setImageResource(R.drawable.message_vioce04);
+                        mImageView.setImageResource(R.drawable.message_vioce04);
                         break;
                     case 5:
-                       mImageView.setImageResource(R.drawable.message_vioce05);
+                        mImageView.setImageResource(R.drawable.message_vioce05);
                         break;
                     case 6:
-                       mImageView.setImageResource(R.drawable.message_vioce06);
+                        mImageView.setImageResource(R.drawable.message_vioce06);
                         break;
                     case 7:
                         mImageView.setImageResource(R.drawable.message_vioce07);
@@ -158,7 +153,7 @@ public class RecordingActivity extends AppCompatActivity {
                         mImageView.setImageResource(R.drawable.message_vioce08);
                         break;
                     default:
-                       mImageView.setImageResource(R.drawable.message_vioce08);
+                        mImageView.setImageResource(R.drawable.message_vioce08);
                         break;
                 }
                 mHandler.postDelayed(mUpdateMicStatusTimer, SPACE);

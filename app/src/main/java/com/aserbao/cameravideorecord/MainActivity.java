@@ -10,9 +10,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
+
+import com.aserbao.cameravideorecord.utils.CameraUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
