@@ -10,13 +10,29 @@
         android:id="@+id/start_recording"
         android:text="开始录音"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
     <Button
         android:id="@+id/play_recording"
         android:text="播放录音"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/textView"
         android:layout_toRightOf="@+id/start_recording"
         android:layout_toEndOf="@+id/start_recording"/>
+    <TextView
+        android:hint="录音文件保存目录……"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"/>
+    <ImageView
+        android:id="@+id/image_view"
+        android:src="@drawable/message_vioce01"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:scaleType="center"
+        android:background="#000000"
+        android:layout_height="80dp"/>
 </RelativeLayout>

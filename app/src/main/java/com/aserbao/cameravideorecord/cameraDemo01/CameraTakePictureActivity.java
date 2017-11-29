@@ -163,6 +163,7 @@ public class CameraTakePictureActivity extends AppCompatActivity implements Surf
                     .VideoEncoder.H264);
             mMediaRecorder.setVideoSize(1280, 720);
             // 每秒 4帧
+            mMediaRecorder.setOrientationHint(90);
             mMediaRecorder.setVideoFrameRate(20);
             mMediaRecorder.setPreviewDisplay(mHolder.getSurface());  // ①
             mMediaRecorder.setOutputFile(file.getAbsolutePath());
